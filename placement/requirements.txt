@@ -1,0 +1,16 @@
+flask
+flask-cors
+flask-sqlalchemy
+mysql-connector-python
+flask-jwt-extended
+flask-dotenv
+flask-mail
+flask-bcrypt
+pandas
+openpyxl 
+reportlab
+matplotlib
+google-genai
+PyPDF2
+dotenv
+matplotlib

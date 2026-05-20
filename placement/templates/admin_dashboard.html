@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Principal Dashboard - NOVASPHERE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{url_for('static',filename='tpo_dashboard.css')}}">
+    <style>
+        /* Admin-specific overrides */
+        .admin-hero {
+            background: linear-gradient(135deg, #512da8 0%, #311b92 100%);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .max-width-600 {
+            max-width: 600px;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <button class="mobile-nav-toggle" id="sidebarToggle">
+        <i class="bi bi-list fs-3"></i>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="d-flex">
+
+        <!-- ───── Sidebar ───── -->
+        <div class="sidebar-wrapper" id="sidebar">
+            <div class="brand-section">
+                <span class="brand-text-nova">NOVA</span><span class="brand-text-sphere">SPHERE</span>
+            </div>
+
+            <div class="sidebar-nav" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <p class="small text-uppercase fw-bold text-muted px-4 mb-2 opacity-50"
+                    style="font-size: 0.65rem; letter-spacing: 1px;">Strategic Overview</p>
+
+                <a class="sidebar-link nav-link active" data-bs-toggle="pill" data-bs-target="#v-pills-dash"
+                    type="button" role="tab">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+
+                <a class="sidebar-link nav-link" data-bs-toggle="pill" data-bs-target="#v-pills-dept" type="button"
+                    role="tab">
+                    <i class="bi bi-building-fill"></i> Departments
+                </a>
+
+                <a class="sidebar-link nav-link" data-bs-toggle="pill" data-bs-target="#v-pills-students" type="button"
+                    role="tab">
+                    <i class="bi bi-people-fill"></i> Student Directory
+                </a>
+
+                <a class="sidebar-link nav-link" data-bs-toggle="pill" data-bs-target="#v-pills-analytics" type="button"
+                    role="tab">
+                    <i class="bi bi-bar-chart-line-fill"></i> Advanced Analytics
+                </a>
+
+                <hr class="mx-3 opacity-10">
+                <p class="small text-uppercase fw-bold text-muted px-4 mb-2 opacity-50"
+                    style="font-size: 0.65rem; letter-spacing: 1px;">Human Resources</p>
+
+                <div class="nav-item">
+                    <a class="sidebar-link justify-content-between text-secondary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#staffCollapse" aria-expanded="false">
+                        <span><i class="bi bi-person-badge-fill me-3"></i>Staff Management</span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </a>
+                    <div class="collapse mt-1" id="staffCollapse">
+                        <a class="sidebar-link nav-link settings-sublink mb-1" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-tpo" type="button" role="tab">
+                            <i class="bi bi-person-workspace"></i> TPO Office
+                        </a>
+                        <a class="sidebar-link nav-link settings-sublink" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-hod" type="button" role="tab">
+                            <i class="bi bi-person-lines-fill"></i> HOD Council
+                        </a>
+                    </div>
+                </div>
+
+                <hr class="mx-3 opacity-10">
+
+                <div class="nav-item">
+                    <a class="sidebar-link justify-content-between text-secondary" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#settingsCollapse" aria-expanded="false">
+                        <span><i class="bi bi-gear-fill me-3"></i>Settings</span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </a>
+                    <div class="collapse mt-1" id="settingsCollapse">
+                        <a class="sidebar-link nav-link settings-sublink mb-1" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-profile" type="button" role="tab">
+                            <i class="bi bi-person-badge"></i> My Profile
+                        </a>
+                        <a class="sidebar-link nav-link settings-sublink" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-password" type="button" role="tab">
+                            <i class="bi bi-shield-lock"></i>Security
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-auto px-3 mb-4">
+                    <a href="/logout"
+                        class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-door-open-fill"></i> <span>Logout Portal</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ───── Main Content ───── -->
+        <div class="main-wrapper">
+            <!-- Global Header -->
+            <div class="global-header">
+                <h5 class="header-title">
+                    <i class="bi bi-shield-check-fill me-2 text-primary"></i>Executive Control Center
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="text-end d-none d-sm-block">
+                        <p class="small fw-bold mb-0 text-dark">{{ user.full_name }}</p>
+                        <p class="text-muted extra-small mb-0 opacity-75" style="font-size: 10px;">Principal Dashboard
+                        </p>
+                    </div>
+                    <div class="avatar-badge overflow-hidden">
+                        {% if user.avatar %}
+                        <img src="{{ url_for('static', filename=user.avatar) }}?v={{ user.id }}">
+                        {% else %}
+                        <img src="{{ user.email | gravatar }}">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="px-1">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4"
+                    role="alert">
+                    <i
+                        class="bi {% if category == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+
+            <div class="tab-content" id="v-pills-tabContent">
+
+                <!-- ─── TAB 1: EXECUTIVE OVERVIEW ─── -->
+                <div class="tab-pane fade show active" id="v-pills-dash" role="tabpanel">
+                    <div class="admin-hero">
+                        <h2 class="fw-bold mb-2">Welcome back, Principal</h2>
+                        <p class="mb-4 opacity-75">Monitoring institutional growth and placement excellence across all
+                            academic departments.</p>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <form action="/admin_dashboard" method="GET" class="d-flex gap-2">
+                                <select name="dept"
+                                    class="form-select form-select-sm rounded-pill px-3 bg-white bg-opacity-20 text-white border-white border-opacity-25"
+                                    onchange="this.form.submit()" style="min-width: 150px; cursor: pointer;">
+                                    <option value="All" {% if selected_dept=='All' %}selected{% endif %}
+                                        class="text-dark">All Departments</option>
+                                    {% for d in departments %}
+                                    <option value="{{ d }}" {% if selected_dept==d %}selected{% endif %}
+                                        class="text-dark">{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select name="batch"
+                                    class="form-select form-select-sm rounded-pill px-3 bg-white bg-opacity-20 text-white border-white border-opacity-25"
+                                    onchange="this.form.submit()" style="min-width: 120px; cursor: pointer;">
+                                    <option value="All" {% if selected_batch=='All' %}selected{% endif %}
+                                        class="text-dark">All Batches</option>
+                                    {% for b in batches %}
+                                    <option value="{{ b }}" {% if selected_batch==b %}selected{% endif %}
+                                        class="text-dark">{{ b }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="tab" value="dash">
+                            </form>
+                            {% if selected_dept != 'All' or selected_batch != 'All' %}
+                            <a href="/admin_dashboard?dept=All&batch=All&tab=dash"
+                                class="badge bg-danger bg-opacity-25 text-white border border-danger border-opacity-25 px-3 py-2 rounded-pill text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-x-circle me-1"></i> Reset Filters
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- NOTICE BOARD -->
+                    {% if announcements %}
+                    <div class="card mb-5 border-0 overflow-hidden">
+                        <div
+                            class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-0">
+                            <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                <i class="fas fa-bullhorn text-primary"></i> Notice Board
+                            </h5>
+                            <span class="badge bg-primary rounded-pill">{{ announcements|length }} Updates</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                {% for note in announcements %}
+                                <div class="list-group-item p-4 border-0 border-bottom notice-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span
+                                                class="badge {% if note.category == 'urgent' %}bg-danger{% elif note.category == 'results' %}bg-success{% else %}bg-primary{% endif %} rounded-pill mb-2"
+                                                style="font-size: 0.65rem;">
+                                                {{ note.category|upper }}
+                                            </span>
+                                            <h6 class="fw-bold mb-1">{{ note.title }}</h6>
+                                        </div>
+                                        <small class="text-muted"><i class="far fa-clock me-1"></i>{{
+                                            note.created_at.strftime('%d %b') if note.created_at else 'Today' }}</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary small">{{ note.content }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="data-card p-4 text-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                                    <i class="bi bi-people-fill fs-3 text-primary"></i>
+                                </div>
+                                <h6 class="text-muted small fw-bold text-uppercase">Total Students</h6>
+                                <h2 class="fw-black mb-0">{{ total_students }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="data-card p-4 text-center">
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                                    <i class="bi bi-check-circle-fill fs-3 text-success"></i>
+                                </div>
+                                <h6 class="text-muted small fw-bold text-uppercase">Students Placed</h6>
+                                <h2 class="fw-black mb-0">{{ placed_count }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="data-card p-4 text-center">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                                    <i class="bi bi-currency-rupee fs-3 text-warning"></i>
+                                </div>
+                                <h6 class="text-muted small fw-bold text-uppercase">Avg. CTC Package</h6>
+                                <h2 class="fw-black mb-0">{{ avg_package }} <span class="fs-6 fw-bold">LPA</span></h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── TAB 2: DEPARTMENTS ─── -->
+                <div class="tab-pane fade" id="v-pills-dept" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="admin-hero">
+                                <h3 class="fw-bold mb-1">Academic Departments</h3>
+                                <p class="mb-0 opacity-75">Overview of departmental placement performance and student
+                                    distribution.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- All Departments Card -->
+                        <div class="col-md-6 col-lg-3">
+                            <a href="/admin_dashboard?dept=All&batch={{ selected_batch }}&tab=dept"
+                                class="text-decoration-none">
+                                <div
+                                    class="data-card p-4 text-center h-100 {% if selected_dept == 'All' %}border-primary border-2{% endif %}">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                                        <i class="bi bi-grid-fill fs-3 text-primary"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">All Departments</h5>
+                                    <p class="text-muted small mb-0">Unified institutional view</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        {% for dept in departments %}
+                        <div class="col-md-6 col-lg-3">
+                            <a href="/admin_dashboard?dept={{ dept }}&batch={{ selected_batch }}&tab=dept"
+                                class="text-decoration-none">
+                                <div
+                                    class="data-card p-4 text-center h-100 {% if selected_dept == dept %}border-primary border-2{% endif %}">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                                        <i class="bi bi-building fs-3 text-primary"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">{{ dept }}</h5>
+                                    <p class="text-muted small mb-0">Click to filter metrics</p>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if selected_dept != 'All' %}
+                    <div class="mt-5">
+                        <div class="data-card">
+                            <div class="data-card-header bg-white d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold mb-1">{{ selected_dept }} Student Records</h5>
+                                    <p class="text-muted small mb-0">List of students in Batch {{ selected_batch }}</p>
+                                </div>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-primary rounded-pill px-3 py-2">{{ total_students }}
+                                            Total</span>
+                                        <span class="badge bg-success rounded-pill px-3 py-2">{{ placed_count }}
+                                            Placed</span>
+                                    </div>
+                                    <a href="/admin_dashboard?dept=All&batch={{ selected_batch }}&tab=dept"
+                                        class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                        <i class="bi bi-x-circle me-1"></i> Clear Selection
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table custom-table mb-0 align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Student Name</th>
+                                            <th>Reg No</th>
+                                            <th>Batch</th>
+                                            <th>Status</th>
+                                            <th>Package</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s in dept_students %}
+                                        <tr>
+                                            <td class="fw-bold">{{ s.name }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ s.regno }}</span></td>
+                                            <td>{{ s.batch }}</td>
+                                            <td>
+                                                {% if s.is_placed %}
+                                                <span
+                                                    class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Placed</span>
+                                                {% else %}
+                                                <span
+                                                    class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold text-primary">{{ s.package or 'N/A' }}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                {% if s.app_id %}
+                                                <a href="/delete_application/{{ s.app_id }}"
+                                                    class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                                    onclick="return confirm('Delete this placement record?')">
+                                                    <i class="bi bi-trash3-fill"></i>
+                                                </a>
+                                                {% else %}
+                                                <button class="btn btn-sm btn-light border-0 rounded-circle text-muted"
+                                                    disabled>
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-5 text-muted">No student records found
+                                                for this department/batch.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mt-5 text-center py-5 bg-white rounded-4 border border-dashed">
+                        <i class="bi bi-cursor-fill fs-1 text-muted opacity-25 mb-3"></i>
+                        <h5 class="text-muted">Select a department above to view detailed data</h5>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ─── TAB 3: STUDENT DIRECTORY ─── -->
+                <div class="tab-pane fade" id="v-pills-students" role="tabpanel">
+                    <div class="data-card">
+                        <div class="data-card-header d-flex flex-column flex-md-row gap-3">
+                            <h5 class="fw-bold mb-0">Global Placement Directory</h5>
+
+                            <div class="d-flex gap-2 ms-md-auto">
+                                <form action="/admin_dashboard" method="GET" class="d-flex gap-2">
+                                    <select name="dept" class="form-select form-select-sm rounded-pill px-3"
+                                        onchange="this.form.submit()">
+                                        <option value="All" {% if selected_dept=='All' %}selected{% endif %}>All
+                                            Departments</option>
+                                        {% for d in departments %}
+                                        <option value="{{ d }}" {% if selected_dept==d %}selected{% endif %}>{{ d }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="hidden" name="batch" value="{{ selected_batch }}">
+                                    <input type="hidden" name="tab" value="students">
+                                </form>
+                                <button class="btn btn-primary btn-sm rounded-pill px-3">Export Directory</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table custom-table mb-0 align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Reg No</th>
+                                        <th>Dept</th>
+                                        <th>Organization</th>
+                                        <th>Package</th>
+                                        <th>Date</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td class="fw-bold text-dark">{{ student.name }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ student.reg_no }}</span>
+                                        </td>
+                                        <td>{{ student.department }}</td>
+                                        <td><span class="text-primary fw-semibold">{{ student.company }}</span></td>
+                                        <td><span class="badge bg-success bg-opacity-10 text-success">{{ student.package
+                                                or 'N/A' }}</span></td>
+                                        <td class="text-muted small">{{ student.placed_date }}</td>
+                                        <td class="text-end">
+                                            <a href="/delete_application/{{ student.app_id }}"
+                                                class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                                onclick="return confirm('Remove this placement record from directory?')">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── STAFF MANAGEMENT TABS (TPO & HOD) ─── -->
+                <div class="tab-pane fade" id="v-pills-tpo" role="tabpanel">
+                    <div class="data-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">TPO Office Management</h5>
+                            <button class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal"
+                                data-bs-target="#addStaffModal">
+                                <i class="bi bi-plus-circle me-2"></i>Authorize New TPO
+                            </button>
+                        </div>
+                        <div class="row g-4">
+                            {% for tpo in tpos %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 border rounded-4 bg-light bg-opacity-50">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="avatar-badge">
+                                            <img src="{{ tpo.email | gravatar }}">
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{{ tpo.name }}</h6>
+                                            <p class="extra-small text-muted mb-0">{{ tpo.email }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-white border w-100" data-bs-toggle="modal"
+                                            data-bs-target="#editStaffModal{{ tpo.user_id }}">Edit</button>
+                                        <a href="/delete_staff/{{ tpo.user_id }}" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Revoke authorization?')"><i
+                                                class="bi bi-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="v-pills-hod" role="tabpanel">
+                    <div class="data-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">HOD Council Management</h5>
+                            <button class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal"
+                                data-bs-target="#addStaffModal">
+                                <i class="bi bi-plus-circle me-2"></i>Authorize New HOD
+                            </button>
+                        </div>
+                        <div class="row g-4">
+                            {% for hod in hods %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 border rounded-4 bg-light bg-opacity-50">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="avatar-badge">
+                                            <img src="{{ hod.email | gravatar }}">
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{{ hod.name }}</h6>
+                                            <p class="extra-small text-muted mb-0">{{ hod.email }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-white border w-100" data-bs-toggle="modal"
+                                            data-bs-target="#editStaffModal{{ hod.user_id }}">Edit</button>
+                                        <a href="/delete_staff/{{ hod.user_id }}" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Revoke authorization?')"><i
+                                                class="bi bi-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── TAB: MY PROFILE ─── -->
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel">
+                    <div class="profile-card">
+                        <div class="row align-items-center g-4 mb-4">
+                            <div class="col-auto">
+                                <div class="profile-avatar-lg"
+                                    onclick="document.getElementById('profile_photo_input').click()">
+                                    {% if user.avatar %}
+                                    <img src="{{ url_for('static', filename=user.avatar) }}?v={{ user.id }}">
+                                    <div class="btn-remove-photo"
+                                        onclick="event.stopPropagation(); removeProfilePhoto()" title="Remove Photo">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </div>
+                                    {% else %}
+                                    <img src="{{ user.email | gravatar }}" style="width: 100%; height: 100%;">
+                                    {% endif %}
+                                    <div class="avatar-overlay">
+                                        <i class="bi bi-camera-fill"></i>
+                                        <span>Change</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h2 class="fw-bold mb-1">{{ user.full_name }}</h2>
+                                <p class="text-muted fw-semibold mb-0"><i class="bi bi-envelope me-2"></i>{{ user.email
+                                    }}</p>
+                            </div>
+                        </div>
+
+                        <form action="/update_profile" method="POST" enctype="multipart/form-data"
+                            class="mt-4 pt-4 border-top">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" name="fullname" value="{{ user.full_name }}"
+                                        class="form-control rounded-3" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" name="email" value="{{ user.email }}"
+                                        class="form-control rounded-3" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="text" name="phone" value="{{ user.phone or '' }}"
+                                        class="form-control rounded-3">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Profile Photo</label>
+                                    <input type="file" name="profile_photo" id="profile_photo_input"
+                                        class="form-control rounded-3" onchange="this.form.submit()">
+                                    <input type="hidden" name="remove_photo" id="remove_photo_input" value="false">
+                                </div>
+                                <div class="col-12 text-end mt-4">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold">Update
+                                        Account</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ─── TAB 6: ADVANCED ANALYTICS ─── -->
+                <div class="tab-pane fade" id="v-pills-analytics" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 admin-hero mb-4">
+                        <h3 class="fw-bold mb-1">Institutional Advanced Analytics</h3>
+                        <p class="mb-2 opacity-75">Strategic insights into placement performance, salary trends, and
+                            academic cycle growth.</p>
+                        <div
+                            class="mt-2 py-1 px-3 bg-white bg-opacity-10 rounded-pill d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill small"></i>
+                            <span class="extra-small opacity-75">Future cycles (e.g. 2025-28) are tracked automatically
+                                but will reflect zero data until placement drives begin.</span>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div
+                                class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-4 border-primary">
+                                <form action="/admin_dashboard" method="GET" class="d-flex align-items-center gap-4">
+                                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                        <label class="fw-bold text-secondary text-nowrap mb-0 small"><i
+                                                class="bi bi-funnel-fill me-1"></i> Filter by Batch:</label>
+                                        <select name="batch" class="form-select form-select-sm rounded-pill border-2"
+                                            onchange="this.form.submit()">
+                                            <option value="All" {% if selected_batch=='All' %}selected{% endif %}>All
+                                                Batches</option>
+                                            {% for b in batches %}
+                                            <option value="{{ b }}" {% if selected_batch==b %}selected{% endif %}>Batch
+                                                {{ b }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="vr opacity-10"></div>
+
+                                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                        <label class="fw-bold text-secondary text-nowrap mb-0 small"><i
+                                                class="bi bi-building me-1"></i> Department:</label>
+                                        <select name="dept" class="form-select form-select-sm rounded-pill border-2"
+                                            onchange="this.form.submit()">
+                                            <option value="All" {% if selected_dept=='All' %}selected{% endif %}>All
+                                                Departments</option>
+                                            {% for d in departments %}
+                                            <option value="{{ d }}" {% if selected_dept==d %}selected{% endif %}>{{ d }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <input type="hidden" name="tab" value="analytics">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if analytics %}
+                    <div class="row g-4 mt-4">
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">Placement Trends (YoY)</h5>
+                                <div class="text-center">
+                                    {% if analytics.trend %}
+                                    <img src="data:image/png;base64,{{ analytics.trend }}" class="img-fluid rounded-3"
+                                        alt="Placement Trends">
+                                    {% else %}
+                                    <div class="py-5 text-muted small">Insufficient historical data.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">Salary Distribution (LPA)</h5>
+                                <div class="text-center">
+                                    {% if analytics.salary %}
+                                    <img src="data:image/png;base64,{{ analytics.salary }}" class="img-fluid rounded-3"
+                                        alt="Salary Distribution">
+                                    {% else %}
+                                    <div class="py-5 text-muted small">No salary data recorded.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">Departmental Performance (%)</h5>
+                                <div class="text-center">
+                                    {% if analytics.dept %}
+                                    <img src="data:image/png;base64,{{ analytics.dept }}" class="img-fluid rounded-3"
+                                        alt="Department Performance">
+                                    {% else %}
+                                    <div class="py-5 text-muted small">Department data unavailable.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">Top Recruitment ROI (%)</h5>
+                                <div class="text-center">
+                                    {% if analytics.roi %}
+                                    <img src="data:image/png;base64,{{ analytics.roi }}" class="img-fluid rounded-3"
+                                        alt="Drive ROI">
+                                    {% else %}
+                                    <div class="py-5 text-muted small">No ROI data available.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ─── TAB 7: SECURITY ─── -->
+                <div class="tab-pane fade" id="v-pills-password" role="tabpanel">
+                    <div class="data-card p-5 max-width-600 mx-auto text-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-flex mb-3">
+                            <i class="bi bi-shield-lock-fill fs-2 text-danger"></i>
+                        </div>
+                        <h4 class="fw-bold">Security & Authorization</h4>
+                        <p class="text-muted small">Update your administrative password for portal security.</p>
+
+                        <form action="/change_password" method="POST" class="text-start mt-4">
+                            <div class="mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" name="current_password" class="form-control rounded-3" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-control" name="password" required
+                                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                                    title="Password must be at least 8 characters long and include uppercase, lowercase, number, and special character">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" name="confirm_password" class="form-control rounded-3" required>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Reset
+                                Administrative Security</button>
+                        </form>
+                    </div>
+                </div>
+            </div> <!-- End tab-content -->
+        </div> <!-- End main-wrapper -->
+    </div> <!-- End d-flex -->
+
+
+    <!-- ─── MODALS ─── -->
+    <!-- Add Staff Modal -->
+    <div class="modal fade" id="addStaffModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Authorize New Staff Member</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/add_staff" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="fullname" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role / Position</label>
+                            <select name="role" class="form-select" required>
+                                <option value="tpo">Training & Placement Officer (TPO)</option>
+                                <option value="hod">Head of Department (HOD)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Generate Access
+                            Authorization</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Staff Modals -->
+    {% for staff in tpos + hods %}
+    <div class="modal fade" id="editStaffModal{{ staff.user_id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Edit Authorization: {{ staff.name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/edit_staff/{{ staff.user_id }}" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="fullname" value="{{ staff.name }}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" value="{{ staff.email }}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" value="{{ staff.phone or '' }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">Update
+                            Authorization</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab Persistence Logic
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+
+            // Generic Tab Persistence Logic
+            if (activeTab) {
+                const targetTab = document.querySelector(`a[data-bs-target="#v-pills-${activeTab}"]`);
+                if (targetTab) {
+                    const tabInstance = bootstrap.Tab.getOrCreateInstance(targetTab);
+                    tabInstance.show();
+
+                    // Open parent collapse if any (for nested tabs like TPO/HOD)
+                    const parentCollapse = targetTab.closest('.collapse');
+                    if (parentCollapse) {
+                        const collapseInstance = bootstrap.Collapse.getOrCreateInstance(parentCollapse);
+                        collapseInstance.show();
+                    }
+                }
+            }
+
+            // Mobile Sidebar Toggle
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const overlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+
+            if (toggleBtn && sidebar && overlay) {
+                toggleBtn.addEventListener('click', function () {
+                    sidebar.classList.toggle('mobile-active');
+                    overlay.classList.toggle('show');
+                });
+
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('mobile-active');
+                    overlay.classList.remove('show');
+                });
+
+                // Close sidebar when clicking a link on mobile
+                const sidebarLinks = sidebar.querySelectorAll('.sidebar-link');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('mobile-active');
+                            overlay.classList.remove('show');
+                        }
+                    });
+                });
+            }
+        });
+
+        function removeProfilePhoto() {
+            if (confirm('Are you sure you want to remove your profile picture?')) {
+                document.getElementById('remove_photo_input').value = 'true';
+                document.querySelector('form[action="/update_profile"]').submit();
+            }
+        }
+    </script>
+    {% include 'chatbot.html' %}
+</body>
+
+</html>

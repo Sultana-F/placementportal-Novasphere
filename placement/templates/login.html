@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novasphere | Login & Register</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Fonts (Poppins) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+
+
+</head>
+
+<body>
+
+    <div class="container" id="container">
+        <!-- REGISTRATION FORM (Adapted for Admin/Staff) -->
+        <div class="form-box register">
+            <form action="/login/admin" method="post">
+                <h1>Admin Login</h1>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <p style="color: red; font-size: 12px;">{{ message }}</p>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <label for="email">Email</label>
+                <input type="email" name="email" placeholder="Email" required>
+                <label for="password">Password</label>
+                <input type="password" name="password" placeholder="Password" required>
+                    <a href="{{ url_for('forgot_password') }}">Forgot Your Password?</a>
+                <button type="submit">Sign In as Admin</button>
+                <div class="mobile-switch">
+                    <p>Are you a student? <a href="#" onclick="document.getElementById('login').click()">Student Login</a></p>
+                </div>
+            </form>
+            </form>
+        </div>
+
+        <!-- LOGIN FORM (Adapted for Students) -->
+        <div class="form-box login">
+            <form action="/login/student" method="post">
+                <h1>Student Login</h1>
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <p style="color: red; font-size: 12px;">{{ message }}</p>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <label for="regno">Registration Number</label>
+                <input type="text" name="regno" placeholder="Registration Number" required>
+                <label for="password">Password</label>
+                <input type="password" name="password" placeholder="Password" required>
+                <a href="{{ url_for('forgot_password') }}">Forgot Your Password?</a>
+                <button type="submit">Sign In as Student</button>
+                <div class="mobile-switch">
+                    <p>Are you an admin? <a href="#" onclick="document.getElementById('register').click()">Admin Login</a></p>
+                </div>
+            </form>
+            </form>
+        </div>
+
+        <!-- TOGGLE CONTAINERS -->
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1>Welcome Back!</h1>
+                    <p>To keep connected with us please login with your student info</p>
+                    <button class="hidden" id="login">Student Login</button>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <h1>Hello, Admin!</h1>
+                    <p>Register your details or login to manage the student portal</p>
+                    <button class="hidden" id="register">Admin Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const registerBtn = document.getElementById('register');
+        const loginBtn = document.getElementById('login');
+
+        registerBtn.addEventListener('click', () => {
+            container.classList.add("active");
+        });
+
+        loginBtn.addEventListener('click', () => {
+            container.classList.remove("active");
+        });
+    </script>
+</body>
+
+</html>
