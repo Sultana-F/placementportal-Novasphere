@@ -799,7 +799,7 @@ Provide your analysis in the following JSON format ONLY, do not output any markd
             try:
                 if isinstance(val, str):
                     val = val.replace('%', '')
-                return max(0, min(100, int(float(val))))
+                return max(0, min(10, int(float(val))))
             except:
                 return 0
 
@@ -1662,7 +1662,9 @@ def post_job():
     return render_template('preview.html', 
                            dept=request.form.get('department'), 
                            company=company_name, 
-                           details=f"{job_role} - {salary_package}. {job_description[:100]}...",
+                           details=f"{job_role} - {salary_package}. {job_description}...",
+                           form_link=form_link,
+                           deadline=deadline,
                            now=datetime.now())
 
 @app.route('/preview-update', methods=['POST'])
@@ -1674,10 +1676,10 @@ def preview_update():
     company = request.form.get('company_name')
     job_role = request.form.get('job_role')
     salary = request.form.get('salary_package')
-    
+    form_link=request.form.get('form-link')
     details = f"Role: {job_role} | Package: {salary}"
     
-    return render_template('preview.html', dept=dept, company=company, details=details, now=datetime.now())
+    return render_template('preview.html', dept=dept, company=company, details=details,form_link=form_link ,now=datetime.now())
 
 @app.route('/send-actual-message', methods=['POST'])
 @login_required(roles=['tpo'])
@@ -1685,6 +1687,8 @@ def send_actual_message():
     dept = request.form.get('dept')
     company = request.form.get('company')
     details = request.form.get('details')
+    form_link=request.form.get('form_link')
+
 
     # WHAPI Logic - User should replace with their real token and group IDs
     token = os.getenv('WHAPI_TOKEN', 'YOUR_WHAPI_TOKEN')
@@ -1704,7 +1708,7 @@ def send_actual_message():
 
     payload = {
         "to": target_group,
-        "body": f"📢 *Placement Alert: {dept}*\n\n🏢 Company: *{company}*\n📝 Details: {details}\n\n_Sent via Novasphere Portal_"
+        "body": f"📢 *Placement Alert: {dept}*\n\n🏢 Company: *{company}*\n📝 Details: {details} \n Link To Apply: {form_link}\n\n_Sent via Novasphere Portal_"
     }
     
     headers = {
@@ -2080,13 +2084,16 @@ def chat():
     except Exception as e:
         print(f"Chatbot Error: {str(e)}")
         return jsonify({'reply': "I'm having a bit of a technical glitch. Could you try asking again in a moment?"})
-
+@app.route('/project-profile')
+def project_showcase():
+    return render_template('project_showcase.html')
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         app.run(host='0.0.0.0', port=5000, debug=True) # for mobile access
+    
 
 
 

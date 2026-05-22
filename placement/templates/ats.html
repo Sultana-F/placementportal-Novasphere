@@ -134,13 +134,13 @@
         <h3 class="text-center mb-3">📊 ATS Score</h3>
 
         <!-- Dynamic color -->
-        <div class="progress ats-progress mb-3">
+        <div class="progress ats-progress mb-2">
             <div class="progress-bar
-                {% if safe_score >= 80 %}bg-success
-                {% elif safe_score >= 60 %}bg-warning
+                {% if safe_score >= 8 %}bg-success
+                {% elif safe_score >= 6 %}bg-warning
                 {% else %}bg-danger
-                {% endif %}" style="width: {{ safe_score }}%;">
-                {{ safe_score }}%
+                {% endif %}" style="width: {{ safe_score * 10 }}%;">
+                {{ safe_score }} / 10
             </div>
         </div>
 
