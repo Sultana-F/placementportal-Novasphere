@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recruiter Sign Up — NOVASPHERE</title>
+  <meta name="description" content="Register as a recruiter on NOVASPHERE to post campus drives and connect with top talent.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-purple: #6c3ff5;
+      --brand-indigo: #512da8;
+      --brand-bg: #f8fafc;
+      --brand-card: #ffffff;
+      --brand-border: #e2e8f0;
+      --brand-text: #1e293b;
+      --brand-muted: #64748b;
+      --brand-accent: #512da8;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--brand-bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated gradient orbs */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 60vw;
+      height: 60vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(81,45,168,0.08) 0%, transparent 65%);
+      animation: drift 12s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -15%;
+      right: -10%;
+      width: 55vw;
+      height: 55vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,63,245,0.05) 0%, transparent 65%);
+      animation: drift 15s ease-in-out infinite alternate-reverse;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes drift { to { transform: translate(5%, 5%); } }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 780px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Brand header */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .brand-logo {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .brand-logo span:first-child { color: var(--brand-text); }
+    .brand-logo span:last-child { color: var(--brand-indigo); }
+    .brand-tagline {
+      color: var(--brand-muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+      font-weight: 400;
+    }
+
+    /* Glass card */
+    .glass-card {
+      background: var(--brand-card);
+      border: none;
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--brand-indigo);
+      margin-bottom: 0.25rem;
+    }
+    .card-subtitle {
+      color: var(--brand-muted);
+      font-size: 0.9rem;
+      font-weight: 400;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Section labels */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand-accent);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--brand-border);
+    }
+
+    /* Form controls */
+    .form-label {
+      color: var(--brand-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.4rem;
+    }
+    .form-control, .form-select {
+      background: #fff !important;
+      border: 2px solid #e2e8f0 !important;
+      border-radius: 14px !important;
+      color: var(--brand-text) !important;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.3s;
+      box-shadow: none !important;
+    }
+    .form-control::placeholder { color: #cbd5e1; }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--brand-indigo) !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 4px rgba(81, 45, 168, 0.1) !important;
+    }
+    .form-select option { background: #fff; color: var(--brand-text); }
+
+    /* Input group icon */
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .bi {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--brand-muted);
+      font-size: 0.95rem;
+      pointer-events: none;
+    }
+    .input-icon-wrap .form-control { padding-left: 2.4rem; }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-purple) 100%);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 8px 25px rgba(81, 45, 168, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(108,63,245,0.55); }
+    .btn-submit:hover::before { opacity: 1; }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--brand-border);
+      margin: 1.75rem 0;
+    }
+
+    /* Flash messages */
+    .flash-alerts { margin-bottom: 1.5rem; }
+    .flash-alert {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .flash-alert.danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+    .flash-alert.success { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+    .flash-alert.warning { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+
+    /* Footer link */
+    .footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--brand-muted);
+      font-size: 0.88rem;
+    }
+    .footer-link a {
+      color: var(--brand-accent);
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .footer-link a:hover { opacity: 0.8; }
+
+    /* Notice pill */
+    .notice-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(81, 45, 168, 0.08);
+      border: 1px solid rgba(81, 45, 168, 0.2);
+      color: var(--brand-indigo);
+      border-radius: 999px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 576px) {
+      .glass-card { padding: 1.75rem 1.25rem; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Brand -->
+    <div class="brand-header">
+      <div class="brand-logo">
+        <span>NOVA</span><span>SPHERE</span>
+      </div>
+      <p class="brand-tagline">Campus Placement Portal — Recruiter Access</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="flash-alerts">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-alert {{ category }}">
+          <i class="bi bi-{% if category == 'success' %}check-circle-fill{% elif category == 'danger' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Glass Card -->
+    <div class="glass-card">
+
+      <div class="notice-pill">
+        <i class="bi bi-shield-check"></i> Requires TPO Approval Before Access
+      </div>
+
+      <h1 class="card-title">Partner Registration</h1>
+      <p class="card-subtitle">Submit your corporate details. The TPO office will review and approve your account within 24 hours.</p>
+
+      <form action="/register/recruiter" method="POST" id="recruiterRegForm" novalidate>
+
+        <!-- Personal Info -->
+        <div class="section-label"><i class="bi bi-person-vcard"></i> Contact Person</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label" for="full_name">Full Name <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-person"></i>
+              <input type="text" name="full_name" id="full_name" class="form-control"
+                     placeholder="e.g. Priya Sharma" required autocomplete="name">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="designation">Designation <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-briefcase"></i>
+              <input type="text" name="designation" id="designation" class="form-control"
+                     placeholder="e.g. HR Manager" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="rec_email">Work Email <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-envelope"></i>
+              <input type="email" name="email" id="rec_email" class="form-control"
+                     placeholder="priya@company.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="password">Create Password <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-lock"></i>
+              <input type="password" name="password" id="password" class="form-control"
+                     placeholder="Minimum 8 characters" required minlength="8">
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Company Info -->
+        <div class="section-label"><i class="bi bi-building"></i> Company Details</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="company_name">Company Name <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-buildings"></i>
+              <input type="text" name="company_name" id="company_name" class="form-control"
+                     placeholder="e.g. TechCorp India Pvt. Ltd." required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="company_website">Company Website</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-globe2"></i>
+              <input type="url" name="company_website" id="company_website" class="form-control"
+                     placeholder="https://techcorp.com">
+            </div>
+          </div>
+
+          <div class="col-12 mt-3">
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <i class="bi bi-send-fill me-2"></i>Submit Registration Request
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-link">
+      Already approved? <a href="/user?tab=admin">Login here</a> &nbsp;·&nbsp;
+      Are you a student? <a href="/user">Student Login</a>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('recruiterRegForm').addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Submitting...';
+    });
+  </script>
+</body>
+</html>

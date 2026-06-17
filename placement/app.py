@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from models import db, User, Role, LoginDetail, Student, JobPosting, Application, Announcement, ValidateStudent, ApprovedStaff
+from models import db, User, Role, LoginDetail, Student, JobPosting, Application, Announcement, ValidateStudent, ApprovedStaff, RecruiterProfile
 from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity,
     get_jti, JWTManager, set_access_cookies, unset_jwt_cookies, decode_token,get_jwt,verify_jwt_in_request
@@ -7,7 +7,6 @@ from flask_jwt_extended import (
 
 
 from functools import wraps
-# pyrefly: ignore [missing-import]
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 load_dotenv()
@@ -22,7 +21,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from flask import send_file
-from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.pagesizes import letter, landscape,A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -97,6 +96,7 @@ ROLE_DASHBOARD = {
     'hod':       'hod_dashboard',
     'tpo':       'tpo_dashboard',
     'student':   'student_dashboard',
+    'recruiter': 'recruiter_dashboard',
 }
 
 
@@ -126,7 +126,7 @@ def register():
 
 
 
-
+##LOGIN ROUTES
 
 # ── Student Login ────────────────────────────────────────────────────────────
 @app.route('/login/student', methods=['POST'])
@@ -179,6 +179,13 @@ def login_admin():
     if user.role == 'student':
         flash('Students must use the Student Login tab.', 'danger')
         return redirect(url_for('loginpage'))
+
+    # Block unapproved recruiters
+    if user.role == 'recruiter':
+        profile = user.recruiter_profile
+        if not profile or not profile.is_approved:
+            flash('Your registration request is pending review by the TPO Office.', 'warning')
+            return redirect(url_for('loginpage') + '?tab=admin')
 
     # Issue JWT with role claim
     access_token = create_access_token(
@@ -234,7 +241,7 @@ def record_login_details(user, access_token):
 
 
 
-
+#RESET PASSWORD LINK
 
 #reset password with token based email
 @app.route('/reset_password', methods=['GET', 'POST'])
@@ -294,7 +301,11 @@ def reset_password(token):
     return render_template('reset_password.html', token=token)
 # Note: The reset_password.html template should include a form that submits the new password to the same URL (including the token).
 
-#student registration
+
+##--------------------------------------------
+#STUDENT REGISTRATION
+##-------------------------------------------
+
 @app.route('/register/student', methods=['POST'])
 def register_student():    
     name= request.form.get('name', '').strip()
@@ -470,7 +481,8 @@ def admin():
     
     # 1. Dashboard Stats
     total_students = student_query.count()
-    placed_students = application_query.filter(Application.status == 'selected').distinct(Application.student_id).count()
+    placed_students = application_query.filter(Application.status == 'selected').with_entities(Application.student_id).distinct().count()
+
     
     # Calculate Average Package for the filtered selection
     selected_apps = application_query.filter(Application.status == 'selected').all()
@@ -535,6 +547,7 @@ def admin():
 
     # 6. Advanced Analytics
     analytics = get_tpo_analytics(selected_batch, selected_dept)
+    predictive = get_predictive_analytics(selected_batch, selected_dept)
 
     return render_template('admin_dashboard.html', 
                          user=user, 
@@ -550,7 +563,8 @@ def admin():
                          selected_batch=selected_batch,
                          departments=dept_list,
                          selected_dept=selected_dept,
-                         analytics=analytics)
+                         analytics=analytics,
+                         predictive=predictive)
 
 
 @app.route('/delete_application/<int:app_id>')
@@ -583,7 +597,7 @@ def add_staff():
         
     try:
         # 1. Create User with default password
-        default_password = bcrypt.generate_password_hash('admin123').decode('utf-8')
+        default_password = bcrypt.generate_password_hash('admin@123').decode('utf-8')
         new_user = User(
             full_name=name,
             email=email,
@@ -934,6 +948,10 @@ def ats_analyzer():
 
 #--------------------ends ats engine preethi
 
+
+#-------------------------------------
+#STUDENT PROFILE EDIT
+#-----------------------------------
 @app.route('/student_profile', methods=['POST'])
 @login_required(roles=['student'])
 def student_update_profile():
@@ -1030,7 +1048,9 @@ def student_update_profile():
     return redirect(request.referrer or url_for('home'))
 
 
-
+# -------------------------------
+    # STUDENT DASHBOARD
+    # -------------------------------
 @app.route('/student_dashboard')
 @login_required(roles=['student'])
 def student_dashboard():
@@ -1120,22 +1140,7 @@ def apply_job(job_id):
         flash(f'Automated Verification Failed: Your backlogs ({student.backlogs}) exceed the maximum allowed ({job.max_backlogs}) for this position.', 'warning')
         return redirect(url_for('student_dashboard'))
     
-    # Check if student profile is complete (Removed as per request)
-    # if not student.resume:
-    #     flash('Please upload your resume before applying. Go to your profile to upload.', 'info')
-    #     return redirect(url_for('student_dashboard'))
-    
-    # if not student.skills:
-    #     flash('Please add your skills to your profile before applying.', 'info')
-    #     return redirect(url_for('student_dashboard'))
-    
-    # Check if already applied (Disabled to allow repeated redirection to external links)
-    # existing = Application.query.filter_by(job_id=job_id, student_id=student.id).first()
-    # if existing:
-    #     flash('You have already applied for this position.', 'warning')
-    #     return redirect(url_for('student_dashboard'))
-    
-    # Check if already applied (Done silently to allow redirection)
+     
     existing = Application.query.filter_by(job_id=job_id, student_id=student.id).first()
     
     if not existing:
@@ -1162,8 +1167,10 @@ def apply_job(job_id):
             
     return redirect(url_for('student_dashboard'))
 
-
-
+ # -------------------------------
+    #HOD DASHBOARD
+    # -------------------------------
+ 
 @app.route('/hod_dashboard')
 @login_required(roles=['hod'])
 def hod_dashboard():
@@ -1431,7 +1438,9 @@ def confirm_upload_students():
 
     return redirect(url_for('hod_dashboard', tab='students'))
 
-
+# =========================
+    # TPO DASHBOARD
+    # =========================
 
 @app.route('/tpo_dashboard')
 @login_required(roles=['tpo'])
@@ -1440,12 +1449,18 @@ def tpo_dashboard():
     user  = User.query.filter_by(email=email).first()
     jobs  = JobPosting.query.order_by(JobPosting.created_at.desc()).all()
     announcements = Announcement.query.order_by(Announcement.created_at.desc()).all()
+
+    # Recruiter management lists
+    pending_recruiters = RecruiterProfile.query.filter_by(is_approved=False).all()
+    approved_recruiters = RecruiterProfile.query.filter_by(is_approved=True).all()
     
     return render_template('tpo_dashboard.html', 
                          user=user, 
                          jobs=jobs, 
                          announcements=announcements, 
-                         now=datetime.now())
+                         now=datetime.now(),
+                         pending_recruiters=pending_recruiters,
+                         approved_recruiters=approved_recruiters)
 
 
 def get_tpo_analytics(selected_batch='All', selected_dept='All'):
@@ -1484,7 +1499,7 @@ def get_tpo_analytics(selected_batch='All', selected_dept='All'):
         batch_counts = {}
         
         # Get all unique batches from the Student table
-        unique_batches = db.session.query(Student.batch).distinct().all()
+        unique_batches = db.session.query(Student.batch).group_by(Student.batch).all()
         for b in unique_batches:
             if b[0]:
                 batch_counts[b[0]] = 0
@@ -1594,6 +1609,279 @@ def fig_to_base64(fig):
     img.seek(0)
     return base64.b64encode(img.getvalue()).decode('utf8')
 
+# Global cache for predictive analytics to avoid hitting rate limits or slowing down dashboard loads
+_predictive_cache = {
+    'timestamp': None,
+    'data': None,
+    'selected_batch': None,
+    'selected_dept': None
+}
+
+def get_predictive_analytics(selected_batch='All', selected_dept='All'):
+    global _predictive_cache
+    
+    # Cache lifetime: 1 hour (3600 seconds)
+    cache_duration = 3600
+    now = datetime.now()
+    
+    if (_predictive_cache['timestamp'] is not None and 
+        (now - _predictive_cache['timestamp']).total_seconds() < cache_duration and
+        _predictive_cache['selected_batch'] == selected_batch and
+        _predictive_cache['selected_dept'] == selected_dept):
+        return _predictive_cache['data']
+
+    # Default fallback data
+    result = {
+        'projected_rate': 75.0,
+        'skill_gaps': [],
+        'analysis': "Strategic analysis is being generated...",
+        'recommendations': "Recommendations are being generated...",
+        'inactive_company': None,
+        'inactive_company_last_seen': None,
+        'outreach_email': "Email draft is being generated..."
+    }
+    
+    try:
+        # 1. Fetch Students, Jobs, Applications
+        students = Student.query.all()
+        jobs = JobPosting.query.all()
+        applications = Application.query.all()
+        
+        # 2. Placement rate per batch (Trend Forecasting)
+        batch_stats = {}
+        for s in students:
+            if not s.batch:
+                continue
+            if selected_dept != 'All' and s.department != selected_dept:
+                continue
+            if s.batch not in batch_stats:
+                batch_stats[s.batch] = {'total': 0, 'placed': 0}
+            batch_stats[s.batch]['total'] += 1
+            # Check if student is placed
+            is_placed = any(app.status == 'selected' for app in s.job_applications)
+            if is_placed:
+                batch_stats[s.batch]['placed'] += 1
+                
+        # Calculate rate per batch
+        rates = []
+        for b, stats in batch_stats.items():
+            # Exclude batches with 0 placements and very few students (future/incomplete batches)
+            if stats['placed'] == 0 and stats['total'] < 5:
+                continue
+            rate = (stats['placed'] / stats['total']) * 100 if stats['total'] > 0 else 0
+            rates.append((b, rate))
+            
+        # Sort batches naturally (e.g. 2021-24 -> year 2021)
+        def parse_batch_year(batch_str):
+            try:
+                match = re.search(r'(\d{4})', batch_str)
+                return int(match.group(1)) if match else 0
+            except:
+                return 0
+        
+        rates.sort(key=lambda x: parse_batch_year(x[0]))
+        
+        # If a specific batch is selected, show its actual real-time placement rate.
+        # Otherwise (if selected_batch is 'All'), forecast the rate for the next batch using regression.
+        if selected_batch != 'All':
+            total_students_in_batch = sum(1 for s in students if s.batch == selected_batch and (selected_dept == 'All' or s.department == selected_dept))
+            placed_students_in_batch = sum(1 for s in students if s.batch == selected_batch and (selected_dept == 'All' or s.department == selected_dept) and any(app.status == 'selected' for app in s.job_applications))
+            projected_rate = (placed_students_in_batch / total_students_in_batch) * 100 if total_students_in_batch > 0 else 0.0
+            projected_rate = round(projected_rate, 1)
+        else:
+            projected_rate = 75.0   # default if not enough data
+            if len(rates) >= 2:
+                x = list(range(len(rates)))
+                y = [r[1] for r in rates]
+                n = len(rates)
+                sum_x = sum(x)
+                sum_y = sum(y)
+                sum_xx = sum(xi * xi for xi in x)
+                sum_xy = sum(xi * yi for xi, yi in zip(x, y))
+                
+                denom = n * sum_xx - sum_x * sum_x
+                if denom != 0:
+                    slope = (n * sum_xy - sum_x * sum_y) / denom
+                    intercept = (sum_y - slope * sum_x) / n
+                    # Forecast next step
+                    projected_rate = slope * n + intercept
+                    projected_rate = max(0.0, min(100.0, round(projected_rate, 1)))
+            elif len(rates) == 1:
+                projected_rate = round(rates[0][1], 1)
+            
+        result['projected_rate'] = projected_rate
+        
+        # 3. Skill Gap Analysis
+        standard_skills = [
+            'python', 'java', 'javascript', 'react', 'node.js', 'sql', 'mongodb', 
+            'aws', 'docker', 'kubernetes', 'c++', 'data structures', 'machine learning', 
+            'html', 'css', 'autocad', 'solidworks', 'matlab', 'cloud computing', 'git'
+        ]
+        
+        # Count skill demand in jobs
+        job_skills_count = {s: 0 for s in standard_skills}
+        total_jobs = len(jobs)
+        for j in jobs:
+            text = (j.job_description or '').lower() + ' ' + (j.job_role or '').lower()
+            for s in standard_skills:
+                if s in text:
+                    job_skills_count[s] += 1
+                    
+        # Filter students by batch/dept if requested
+        target_students = students
+        if selected_batch != 'All':
+            target_students = [s for s in target_students if s.batch == selected_batch]
+        if selected_dept != 'All':
+            target_students = [s for s in target_students if s.department == selected_dept]
+            
+        total_target_students = len(target_students)
+        student_skills_count = {s: 0 for s in standard_skills}
+        for s in target_students:
+            s_skills = (s.skills or '').lower()
+            for skill in standard_skills:
+                if skill in s_skills:
+                    student_skills_count[skill] += 1
+                    
+        # Calculate gaps
+        gaps = []
+        for s in standard_skills:
+            job_pct = (job_skills_count[s] / total_jobs) * 100 if total_jobs > 0 else 0
+            student_pct = (student_skills_count[s] / total_target_students) * 100 if total_target_students > 0 else 0
+            gap_pct = job_pct - student_pct
+            if gap_pct > 0:
+                gaps.append({
+                    'skill': s,
+                    'job_pct': job_pct,
+                    'student_pct': student_pct,
+                    'gap_pct': gap_pct
+                })
+                
+        gaps.sort(key=lambda x: x['gap_pct'], reverse=True)
+        result['skill_gaps'] = gaps[:4]
+        
+        # 4. Inactive Corporate Relations
+        company_last_seen = {}
+        for j in jobs:
+            if not j.company_name:
+                continue
+            date = j.created_at or datetime.min
+            if j.company_name not in company_last_seen or date > company_last_seen[j.company_name]:
+                company_last_seen[j.company_name] = date
+                
+        inactive_companies = []
+        cutoff = datetime.now() - timedelta(days=90)
+        for comp, last_date in company_last_seen.items():
+            if last_date < cutoff:
+                inactive_companies.append((comp, last_date))
+                
+        inactive_companies.sort(key=lambda x: x[1])
+        
+        inactive_comp_name = None
+        inactive_comp_date_str = None
+        if inactive_companies:
+            inactive_comp_name, last_date = inactive_companies[0]
+            inactive_comp_date_str = last_date.strftime('%B %Y')
+            result['inactive_company'] = inactive_comp_name
+            result['inactive_company_last_seen'] = inactive_comp_date_str
+            
+        # 5. Call Gemini to generate Strategic Suggestions
+        skill_gaps_text = ", ".join([f"{g['skill']} ({g['gap_pct']:.1f}% gap: {g['job_pct']:.1f}% required vs {g['student_pct']:.1f}% possessed)" for g in result['skill_gaps']])
+        if not skill_gaps_text:
+            skill_gaps_text = "No critical skill gaps detected."
+            
+        inactive_text = f"{inactive_comp_name} (last active: {inactive_comp_date_str})" if inactive_comp_name else "None"
+        
+        dept_perf_text = ""
+        dept_placed = {}
+        dept_total = {}
+        for s in target_students:
+            if not s.department:
+                continue
+            dept_total[s.department] = dept_total.get(s.department, 0) + 1
+            if any(app.status == 'selected' for app in s.job_applications):
+                dept_placed[s.department] = dept_placed.get(s.department, 0) + 1
+        for d in dept_total:
+            dp = dept_placed.get(d, 0)
+            dt = dept_total[d]
+            pct = (dp / dt) * 100 if dt > 0 else 0
+            dept_perf_text += f"{d}: {pct:.1f}% placed ({dp}/{dt}); "
+            
+        if not dept_perf_text:
+            dept_perf_text = "No departmental placement statistics available."
+
+        groq_api_key = os.getenv('GROQ_API_KEY')
+        if groq_api_key:
+            from groq import Groq
+            groq_client = Groq(api_key=groq_api_key)
+            
+            system_prompt = (
+                "You are a professional AI placement consultant reporting to the college principal. "
+                "You provide structured, professional, and actionable advice to improve placements and corporate connections."
+            )
+            
+            user_prompt = f"""
+            Based on the college placement metrics below:
+            - Projected Placement Rate for Next Batch: {projected_rate:.1f}%
+            - Top Skill Gaps in Current Batch: {skill_gaps_text}
+            - Inactive Corporate Partner: {inactive_text}
+            - Department Placement Performance: {dept_perf_text}
+            
+            Please provide:
+            1. A concise, strategic analysis of the projected trend and department performance (max 3-4 sentences).
+            2. 3-4 highly actionable and specific recommendations to improve placement rates (e.g. workshops on the gap skills, specialized academic interventions).
+            3. A highly professional, copyable outreach email template to invite {inactive_comp_name if inactive_comp_name else 'our corporate partners'} back to campus for placement drives, mentioning we have matching candidates.
+            
+            IMPORTANT: Format your response EXACTLY as shown below with these exact section separators:
+            
+            ---STRATEGIC_ANALYSIS---
+            [Insert strategic analysis here]
+            
+            ---RECOMMENDATIONS---
+            [Insert bulleted actionable recommendations here]
+            
+            ---OUTREACH_EMAIL---
+            Subject: [Insert subject]
+            [Insert email body here]
+            """
+            
+            response = groq_client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt
+                    }
+                ],
+                model="llama-3.3-70b-versatile",
+                temperature=0.3
+            )
+            
+            if response.choices and response.choices[0].message.content:
+                text = response.choices[0].message.content
+                if "---STRATEGIC_ANALYSIS---" in text:
+                    parts = text.split("---STRATEGIC_ANALYSIS---")[1].split("---RECOMMENDATIONS---")
+                    result['analysis'] = parts[0].strip()
+                    if len(parts) > 1:
+                        subparts = parts[1].split("---OUTREACH_EMAIL---")
+                        result['recommendations'] = subparts[0].strip()
+                        if len(subparts) > 1:
+                            result['outreach_email'] = subparts[1].strip()
+                            
+        # Update cache
+        _predictive_cache['timestamp'] = now
+        _predictive_cache['selected_batch'] = selected_batch
+        _predictive_cache['selected_dept'] = selected_dept
+        _predictive_cache['data'] = result
+        
+    except Exception as e:
+        print(f"Error generating predictive analytics: {e}")
+        
+    return result
+
+
 
 @app.route('/track_registrations')
 @login_required(roles=['tpo'])
@@ -1679,10 +1967,10 @@ def preview_update():
     company = request.form.get('company_name')
     job_role = request.form.get('job_role')
     salary = request.form.get('salary_package')
-    form_link=request.form.get('form-link')
     details = f"Role: {job_role} | Package: {salary}"
-    
-    return render_template('preview.html', dept=dept, company=company, details=details,form_link=form_link ,now=datetime.now())
+    form_link=request.form.get('form_link')
+
+    return render_template('preview.html', dept=dept, company=company, details=details, form_link=form_link, now=datetime.now())
 
 @app.route('/send-actual-message', methods=['POST'])
 @login_required(roles=['tpo'])
@@ -1700,7 +1988,8 @@ def send_actual_message():
     group_map = {
         "BCA": os.getenv('WHAPI_GROUP_BCA'),
         "BBA": os.getenv('WHAPI_GROUP_BBA'),
-        "B.Tech": os.getenv('WHAPI_GROUP_BTECH')
+        "BCOM": os.getenv('WHAPI_GROUP_BCOM'),
+        "BSC": os.getenv('WHAPI_GROUP_BSC'),
     }
     
     target_group = group_map.get(dept)
@@ -1711,7 +2000,7 @@ def send_actual_message():
 
     payload = {
         "to": target_group,
-        "body": f"📢 *Placement Alert: {dept}*\n\n🏢 Company: *{company}*\n📝 Details: {details} \n Link To Apply: {form_link}\n\n_Sent via Novasphere Portal_"
+        "body": f"📢 *Placement Alert: {dept}*\n\n🏢 Company: *{company}*\n📝 Details: {details}\n\n🔗 *Link To Apply:* {form_link if form_link else 'Check Portal'}\n\n_Sent via Novasphere Portal_"
     }
     
     headers = {
@@ -1871,6 +2160,18 @@ def download_applicants_excel(job_id):
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
+def draw_page_border(canvas, doc):
+    """Calculates and draws the page border frame on the background canvas."""
+    canvas.saveState()
+    page_width, page_height = doc.pagesize
+    margin = 20
+    
+    canvas.setStrokeColor(colors.HexColor('#1A365D')) # Corporate Navy
+    canvas.setLineWidth(2)
+    canvas.rect(margin, margin, page_width - (2*margin), page_height - (2*margin), stroke=1, fill=0)
+    
+    canvas.restoreState()
+
 @app.route('/download_applicants_pdf/<int:job_id>')
 @login_required(roles=['tpo'])
 def download_applicants_pdf(job_id):
@@ -1878,7 +2179,7 @@ def download_applicants_pdf(job_id):
     applications = Application.query.filter_by(job_id=job_id).all()
     
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     
     styles = getSampleStyleSheet()
@@ -1888,7 +2189,6 @@ def download_applicants_pdf(job_id):
     
     # Table Header
     data = [['Student Name', 'Reg No', 'Email', 'Dept/Sem', 'CGPA', 'Status']]
-    
     # Table Data
     for app in applications:
         data.append([
@@ -1898,11 +2198,13 @@ def download_applicants_pdf(job_id):
             f"{app.student.department}/{app.student.sem}",
             str(app.student.cgpa),
             app.status.capitalize()
+            
+          
         ])
     
     table = Table(data, repeatRows=1)
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.blue),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -1913,8 +2215,9 @@ def download_applicants_pdf(job_id):
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
     
+    
     elements.append(table)
-    doc.build(elements)
+    doc.build(elements, onFirstPage=draw_page_border, onLaterPages=draw_page_border)
     
     buffer.seek(0)
     filename = f"Applicants_{job.company_name}_{job.job_role}.pdf".replace(' ', '_')
@@ -2087,10 +2390,204 @@ def chat():
     except Exception as e:
         print(f"Chatbot Error: {str(e)}")
         return jsonify({'reply': "I'm having a bit of a technical glitch. Could you try asking again in a moment?"})
-@app.route('/project-profile')
-def project_showcase():
-    return render_template('project_showcase.html')
-# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Recruiter Routes AT LAST BEFORE MAIN ─────────────────────────────────────────────────────────
+
+@app.route('/register/recruiter', methods=['GET', 'POST'])
+def register_recruiter():
+    """Public registration page for recruiters — creates an unapproved account."""
+    if request.method == 'GET':
+        return render_template('recruiter_register.html')
+
+    full_name      = request.form.get('full_name', '').strip()
+    email          = request.form.get('email', '').strip()
+    password       = request.form.get('password', '').strip()
+    company_name   = request.form.get('company_name', '').strip()
+    company_website= request.form.get('company_website', '').strip()
+    designation    = request.form.get('designation', '').strip()
+
+    if not all([full_name, email, password, company_name, designation]):
+        flash('All required fields must be filled in.', 'danger')
+        return redirect(url_for('register_recruiter'))
+
+    if User.query.filter_by(email=email).first():
+        flash('An account with this email already exists.', 'danger')
+        return redirect(url_for('register_recruiter'))
+
+    try:
+        new_user = User(
+            full_name=full_name,
+            email=email,
+            password=bcrypt.generate_password_hash(password).decode('utf-8'),
+            role='recruiter'
+        )
+        db.session.add(new_user)
+        db.session.flush()  # Generates new_user.id
+
+        new_profile = RecruiterProfile(
+            user_id=new_user.id,
+            company_name=company_name,
+            company_website=company_website or None,
+            designation=designation,
+            is_approved=False
+        )
+        db.session.add(new_profile)
+        db.session.commit()
+
+        flash('Registration submitted! You will be notified once the TPO approves your account.', 'success')
+        return redirect(url_for('loginpage') + '?tab=admin')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Registration error: {str(e)}', 'danger')
+        return redirect(url_for('register_recruiter'))
+
+
+@app.route('/recruiter/approve/<int:user_id>', methods=['POST'])
+@login_required(roles=['tpo'])
+def approve_recruiter(user_id):
+    """TPO approves a pending recruiter account."""
+    profile = RecruiterProfile.query.filter_by(user_id=user_id).first_or_404()
+    profile.is_approved = True
+    db.session.commit()
+    flash(f'Recruiter "{profile.company_name}" has been approved.', 'success')
+    return redirect(url_for('tpo_dashboard') + '#recruiters')
+
+
+@app.route('/recruiter/reject/<int:user_id>', methods=['POST'])
+@login_required(roles=['tpo'])
+def reject_recruiter(user_id):
+    """TPO rejects and permanently removes a recruiter account."""
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Recruiter account rejected and removed.', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error removing recruiter: {str(e)}', 'danger')
+    return redirect(url_for('tpo_dashboard') + '#recruiters')
+
+
+@app.route('/recruiter/revoke/<int:user_id>', methods=['POST'])
+@login_required(roles=['tpo'])
+def revoke_recruiter(user_id):
+    """TPO revokes access for an already-approved recruiter."""
+    profile = RecruiterProfile.query.filter_by(user_id=user_id).first_or_404()
+    profile.is_approved = False
+    db.session.commit()
+    flash(f'Access for "{profile.company_name}" has been revoked.', 'warning')
+    return redirect(url_for('tpo_dashboard') + '#recruiters')
+
+
+@app.route('/recruiter_dashboard')
+@login_required(roles=['recruiter'])
+def recruiter_dashboard():
+    """Main dashboard for approved recruiters."""
+    email   = get_jwt_identity()
+    user    = User.query.filter_by(email=email).first()
+    profile = user.recruiter_profile
+
+    # Jobs posted by this recruiter
+    my_jobs = JobPosting.query.filter_by(recruiter_id=user.id).order_by(JobPosting.created_at.desc()).all()
+
+    # Aggregate stats
+    active_jobs     = sum(1 for j in my_jobs if j.deadline >= datetime.now() and j.status == 'open')
+    total_applicants= sum(len(j.applications) for j in my_jobs)
+    shortlisted     = sum(
+        sum(1 for a in j.applications if a.status in ('shortlisted', 'selected'))
+        for j in my_jobs
+    )
+
+    # Applicants across all recruiter jobs (for the applicant management tab)
+    all_applications = []
+    for job in my_jobs:
+        for app in job.applications:
+            all_applications.append({'job': job, 'app': app, 'student': app.student})
+
+    return render_template(
+        'recruiter_dashboard.html',
+        user=user,
+        profile=profile,
+        jobs=my_jobs,
+        active_jobs=active_jobs,
+        total_applicants=total_applicants,
+        shortlisted=shortlisted,
+        all_applications=all_applications,
+        now=datetime.now()
+    )
+
+
+@app.route('/recruiter/post_job', methods=['POST'])
+@login_required(roles=['recruiter'])
+def recruiter_post_job():
+    """Allow a recruiter to post a new job drive linked to their account."""
+    email = get_jwt_identity()
+    user  = User.query.filter_by(email=email).first()
+
+    company_name        = request.form.get('company_name', '').strip()
+    job_role            = request.form.get('job_role', '').strip()
+    job_description     = request.form.get('job_description', '').strip()
+    eligibility_criteria= request.form.get('eligibility_criteria', '').strip()
+    salary_package      = request.form.get('salary_package', '').strip()
+    location            = request.form.get('location', '').strip()
+    deadline_str        = request.form.get('deadline', '').strip()
+    form_link           = request.form.get('form_link', '').strip() or None
+    min_cgpa            = request.form.get('min_cgpa', 0.0, type=float)
+    max_backlogs        = request.form.get('max_backlogs', 0, type=int)
+
+    if not all([company_name, job_role, job_description, deadline_str, location]):
+        flash('Please fill in all required fields.', 'danger')
+        return redirect(url_for('recruiter_dashboard'))
+
+    try:
+        deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+        new_job  = JobPosting(
+            company_name=company_name,
+            job_role=job_role,
+            job_description=job_description,
+            eligibility_criteria=eligibility_criteria or None,
+            salary_package=salary_package or None,
+            location=location,
+            deadline=deadline,
+            form_link=form_link,
+            min_cgpa=min_cgpa,
+            max_backlogs=max_backlogs,
+            status='open',
+            recruiter_id=user.id
+        )
+        db.session.add(new_job)
+        db.session.commit()
+        flash(f'Job drive for "{job_role}" published successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error publishing job: {str(e)}', 'danger')
+
+    return redirect(url_for('recruiter_dashboard'))
+@app.route('/recruiter/update_applicant_status/<int:app_id>', methods=['POST'])
+@login_required(roles=['recruiter'])
+def recruiter_update_applicant_status(app_id):
+    """Allow a recruiter to update the status of an applicant to one of their jobs."""
+    email = get_jwt_identity()
+    user  = User.query.filter_by(email=email).first()
+
+    application = Application.query.get_or_404(app_id)
+
+    # Security: verify the job belongs to this recruiter
+    if application.job.recruiter_id != user.id:
+        flash('You are not authorized to update this application.', 'danger')
+        return redirect(url_for('recruiter_dashboard'))
+
+    new_status = request.form.get('status')
+    allowed_statuses = ['pending', 'shortlisted', 'interviewed', 'rejected', 'selected']
+    if new_status in allowed_statuses:
+        application.status = new_status
+        db.session.commit()
+        flash(f'Applicant status updated to "{new_status}".', 'success')
+    else:
+        flash('Invalid status provided.', 'danger')
+
+    return redirect(url_for('recruiter_dashboard'))
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

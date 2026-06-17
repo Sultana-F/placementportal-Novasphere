@@ -24,6 +24,25 @@
         .max-width-600 {
             max-width: 600px;
         }
+
+        /* Predictive Analytics Custom CSS */
+        .bg-indigo {
+            background-color: #512da8 !important;
+            color: white;
+        }
+
+        .text-indigo {
+            color: #512da8 !important;
+        }
+
+        .bg-indigo-100 {
+            background-color: #ede7f6 !important;
+            color: #512da8 !important;
+        }
+
+        .border-indigo-500 {
+            border-color: #512da8 !important;
+        }
     </style>
 </head>
 
@@ -708,6 +727,130 @@
                         </div>
                     </div>
                     {% endif %}
+
+                    {% if predictive %}
+                    <!-- AI & ML Predictive Insights & Recommendations Section -->
+                    <div class="row g-4 mt-4">
+                        <!-- Left column: Predictive Analytics Metrics and Skill Gaps -->
+                        <div class="col-lg-5">
+                            <div
+                                class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white border-start border-4 border-indigo-500">
+                                <h4 class="fw-bold text-dark mb-3"><i class="bi bi-cpu-fill text-indigo me-2"></i>ML
+                                    Placement Forecast</h4>
+                                <hr class="my-3 opacity-10">
+
+                                <!-- Projected Rate -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-secondary fw-semibold small">
+                                            {% if selected_batch == 'All' %}Projected Placement Rate{% else %}Real-Time
+                                            Placement Rate{% endif %}
+                                        </span>
+                                        <span class="badge bg-indigo-100 text-indigo fw-bold fs-6">{{
+                                            predictive.projected_rate }}%</span>
+                                    </div>
+                                    <div class="progress rounded-pill" style="height: 12px;">
+                                        <div class="progress-bar bg-indigo" role="progressbar"
+                                            style="width: {{ predictive.projected_rate }}%"
+                                            aria-valuenow="{{ predictive.projected_rate }}" aria-valuemin="0"
+                                            aria-valuemax="100"></div>
+                                    </div>
+                                    <p class="text-muted extra-small mt-2 mb-0">
+                                        {% if selected_batch == 'All' %}
+                                        Calculated using linear extrapolation of historical batch placement rates.
+                                        {% else %}
+                                        Actual real-time placement rate calculated for the selected batch.
+                                        {% endif %}
+                                    </p>
+                                </div>
+
+                                <!-- Skill Gaps -->
+                                <h5 class="fw-bold text-secondary mb-3"><i
+                                        class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Top Skill Gaps
+                                    Demanded</h5>
+                                <div class="list-group list-group-flush">
+                                    {% for gap in predictive.skill_gaps %}
+                                    <div class="list-group-item px-0 py-2 border-0 bg-transparent">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-dark text-capitalize small">{{ gap.skill }}</span>
+                                            <span
+                                                class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 extra-small">{{
+                                                gap.gap_pct|round(1) }}% Gap</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="flex-grow-1">
+                                                <div class="progress rounded-pill" style="height: 6px;">
+                                                    <div class="progress-bar bg-danger" role="progressbar"
+                                                        style="width: {{ gap.job_pct }}%" title="Company Demand"></div>
+                                                    <div class="progress-bar bg-success" role="progressbar"
+                                                        style="width: {{ gap.student_pct }}%"
+                                                        title="Student Possession"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between extra-small text-muted mt-1"
+                                            style="font-size: 0.65rem;">
+                                            <span>Company Demand: {{ gap.job_pct|round(1) }}%</span>
+                                            <span>Student Possession: {{ gap.student_pct|round(1) }}%</span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted small">No skill gaps detected in current listings.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right column: AI Suggestions and Outreach Copilot -->
+                        <div class="col-lg-7">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                                <h4 class="fw-bold text-dark mb-3"><i class="bi bi-magic text-primary me-2"></i>AI
+                                    Strategic Action Plan</h4>
+                                <hr class="my-3 opacity-10">
+
+                                <div class="mb-4">
+                                    <h6 class="fw-bold text-indigo mb-2">Strategic Analysis</h6>
+                                    <div class="text-secondary small bg-light p-3 rounded-3" style="line-height: 1.6;">
+                                        {{ predictive.analysis | safe | replace('\n', '<br>') }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="fw-bold text-success mb-2">Actionable Suggestions</h6>
+                                    <div class="text-secondary small bg-light p-3 rounded-3" style="line-height: 1.6;">
+                                        {{ predictive.recommendations | safe | replace('\n', '<br>') }}
+                                    </div>
+                                </div>
+
+                                {% if predictive.inactive_company %}
+                                <div>
+                                    <h6 class="fw-bold text-warning mb-2"><i
+                                            class="bi bi-envelope-paper-fill me-1"></i>Corporate Outreach Assistant</h6>
+                                    <p class="text-muted extra-small mb-2">
+                                        Reconnect with <strong>{{ predictive.inactive_company }}</strong> (last active:
+                                        {{ predictive.inactive_company_last_seen }}).
+                                    </p>
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill mb-2" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#emailTemplateCollapse"
+                                        aria-expanded="false">
+                                        <i class="bi bi-file-earmark-text-fill me-1"></i>View Custom Email Draft
+                                    </button>
+                                    <div class="collapse" id="emailTemplateCollapse">
+                                        <div class="bg-dark text-light p-3 rounded-3 font-monospace position-relative"
+                                            style="font-size: 0.75rem;">
+                                            <button
+                                                class="btn btn-sm btn-light border-0 position-absolute end-0 top-0 m-2 py-0 px-2"
+                                                style="font-size: 0.65rem;" onclick="copyOutreachEmail()">Copy</button>
+                                            <pre id="outreachEmailText" class="mb-0 text-white"
+                                                style="white-space: pre-wrap; font-family: monospace;">{{ predictive.outreach_email }}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- ─── TAB 7: SECURITY ─── -->
@@ -875,6 +1018,15 @@
                 document.getElementById('remove_photo_input').value = 'true';
                 document.querySelector('form[action="/update_profile"]').submit();
             }
+        }
+
+        function copyOutreachEmail() {
+            var emailText = document.getElementById("outreachEmailText").innerText;
+            navigator.clipboard.writeText(emailText).then(function () {
+                alert("Outreach email copied to clipboard!");
+            }, function (err) {
+                console.error("Could not copy text: ", err);
+            });
         }
     </script>
     {% include 'chatbot.html' %}

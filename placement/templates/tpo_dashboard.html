@@ -45,6 +45,14 @@
                     <i class="bi bi-megaphone-fill"></i> Notice Board
                 </a>
 
+                <a class="sidebar-link nav-link" data-bs-toggle="pill" data-bs-target="#v-pills-recruiters" type="button"
+                    role="tab" id="v-pills-recruiters-tab">
+                    <i class="bi bi-person-badge-fill"></i> Recruiter Approvals
+                    {% if pending_recruiters %}
+                    <span class="badge bg-warning text-dark rounded-pill ms-auto" style="font-size:0.65rem">{{ pending_recruiters|length }}</span>
+                    {% endif %}
+                </a>
+
 
 
                 <hr class="mx-3 opacity-10">
@@ -873,6 +881,167 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ─── TAB 5: RECRUITER APPROVALS ─── -->
+                <div class="tab-pane fade" id="v-pills-recruiters" role="tabpanel">
+                    <div class="row g-4">
+
+                        <!-- Pending Requests -->
+                        <div class="col-12">
+                            <div class="profile-card p-4">
+                                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-4">
+                                        <i class="bi bi-hourglass-split fs-3 text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold mb-0">Pending Approval Requests</h4>
+                                        <p class="text-muted small mb-0">Recruiters awaiting TPO verification and access grant.</p>
+                                    </div>
+                                    {% if pending_recruiters %}
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 ms-auto fw-bold">{{ pending_recruiters|length }} Pending</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if pending_recruiters %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0 custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-3">Recruiter</th>
+                                                <th>Company</th>
+                                                <th>Designation</th>
+                                                <th>Website</th>
+                                                <th>Requested On</th>
+                                                <th class="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rp in pending_recruiters %}
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <img src="{{ rp.user.email | gravatar }}" alt="avatar"
+                                                             class="rounded-circle" width="36" height="36"
+                                                             style="border:2px solid var(--bs-primary, #6c3ff5)">
+                                                        <div>
+                                                            <div class="fw-bold small">{{ rp.user.full_name }}</div>
+                                                            <div class="text-muted extra-small">{{ rp.user.email }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="fw-semibold small">{{ rp.company_name }}</td>
+                                                <td class="text-muted small">{{ rp.designation or '—' }}</td>
+                                                <td class="small">
+                                                    {% if rp.company_website %}
+                                                    <a href="{{ rp.company_website }}" target="_blank" class="text-primary text-decoration-none">
+                                                        <i class="bi bi-box-arrow-up-right me-1"></i>Visit
+                                                    </a>
+                                                    {% else %}—{% endif %}
+                                                </td>
+                                                <td class="text-muted small">{{ rp.created_at.strftime('%d %b %Y') }}</td>
+                                                <td class="text-center">
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <form action="/recruiter/approve/{{ rp.user_id }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm"
+                                                                    onclick="return confirm('Approve {{ rp.user.full_name }} from {{ rp.company_name }}?')">
+                                                                <i class="bi bi-check-lg me-1"></i>Approve
+                                                            </button>
+                                                        </form>
+                                                        <form action="/recruiter/reject/{{ rp.user_id }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold"
+                                                                    onclick="return confirm('Permanently reject and remove this recruiter account?')">
+                                                                <i class="bi bi-x-lg me-1"></i>Reject
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-inbox fs-1 text-muted opacity-25"></i>
+                                    <p class="text-muted mt-2 small">No pending recruiter requests at this time.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Active Recruiters -->
+                        <div class="col-12">
+                            <div class="profile-card p-4">
+                                <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-4">
+                                        <i class="bi bi-person-check-fill fs-3 text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="fw-bold mb-0">Active Recruiter Accounts</h4>
+                                        <p class="text-muted small mb-0">Corporate partners with approved portal access.</p>
+                                    </div>
+                                </div>
+
+                                {% if approved_recruiters %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0 custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-3">Recruiter</th>
+                                                <th>Company</th>
+                                                <th>Designation</th>
+                                                <th>Drives Posted</th>
+                                                <th>Member Since</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rp in approved_recruiters %}
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <img src="{{ rp.user.email | gravatar }}" alt="avatar"
+                                                             class="rounded-circle" width="36" height="36"
+                                                             style="border:2px solid #10b981">
+                                                        <div>
+                                                            <div class="fw-bold small">{{ rp.user.full_name }}</div>
+                                                            <div class="text-muted extra-small">{{ rp.user.email }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="fw-semibold small">{{ rp.company_name }}</td>
+                                                <td class="text-muted small">{{ rp.designation or '—' }}</td>
+                                                <td>
+                                                    <span class="badge bg-dark rounded-pill px-3 py-2 fw-bold">
+                                                        {{ rp.user.recruiter_jobs | length }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted small">{{ rp.created_at.strftime('%d %b %Y') }}</td>
+                                                <td class="text-center">
+                                                    <form action="/recruiter/revoke/{{ rp.user_id }}" method="POST" class="d-inline">
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold"
+                                                                onclick="return confirm('Revoke portal access for {{ rp.user.full_name }}?')">
+                                                            <i class="bi bi-slash-circle me-1"></i>Revoke Access
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-building fs-1 text-muted opacity-25"></i>
+                                    <p class="text-muted mt-2 small">No approved recruiter accounts yet.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- /recruiter tab -->
 
             </div> <!-- End tab-content -->
 

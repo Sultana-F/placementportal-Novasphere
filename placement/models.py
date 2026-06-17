@@ -12,7 +12,7 @@ class User(db.Model):
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum('principal', 'hod', 'student', 'tpo'), nullable=False)
+    role = db.Column(db.Enum('principal', 'hod', 'student', 'tpo', 'recruiter'), nullable=False)
     phone = db.Column(db.String(15))
     avatar = db.Column(db.String(255))
     
@@ -133,6 +133,9 @@ class JobPosting(db.Model):
     max_backlogs = db.Column(db.Integer, default=0)  # Maximum allowed backlogs
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     posted_by = db.Column(db.Integer, db.ForeignKey('users.id')) # TPO ID
+    recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True) # Recruiter ID
+
+    recruiter = db.relationship('User', foreign_keys=[recruiter_id], backref='recruiter_jobs')
 
 
 # ─── Application Model ───────────────────────────────────────────────────────
@@ -186,4 +189,19 @@ class ApprovedStaff(db.Model):
     role = db.Column(db.String(20), nullable=False) # 'tpo' or 'hod'
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     user = db.relationship('User', backref=db.backref('approved_staff_profile', uselist=False, cascade='all, delete-orphan'))
+
+
+# ─── Recruiter Profile Model ──────────────────────────────────────────────────
+class RecruiterProfile(db.Model):
+    __tablename__ = 'recruiter_profiles'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False)
+    company_name = db.Column(db.String(100), nullable=False)
+    company_website = db.Column(db.String(255))
+    company_logo = db.Column(db.String(255))
+    designation = db.Column(db.String(50))
+    is_approved = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref=db.backref('recruiter_profile', uselist=False, cascade='all, delete-orphan'))
 

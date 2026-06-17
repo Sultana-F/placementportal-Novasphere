@@ -254,4 +254,4 @@ body {
     .sidebar-desktop { transform: translateX(-100%); }
     .main-content { margin-left: 0; padding: 1.5rem; }
     .sidebar-desktop.mobile-active { transform: translateX(0); }
-}
+}

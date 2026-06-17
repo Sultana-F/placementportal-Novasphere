@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recruiter Dashboard — NOVASPHERE</title>
+  <meta name="description"
+    content="Manage your campus drives, post new jobs, and track applicants from your NOVASPHERE Recruiter Dashboard.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-w: 255px;
+      --sidebar-w: 260px;
+      --purple: #6c3ff5;
+      --indigo: #4338ca;
+      --dark-bg: #0f0d1e;
+      --sidebar-bg: #13102a;
+      --card-bg: #1a1733;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #e8e6f5;
+      --muted: rgba(232, 230, 245, 0.5);
+      --indigo: #512da8;
+      --bg-body: #f8fafc;
+      --sidebar-bg: #0e0c1b;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --accent: #a78bfa;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--dark-bg);
+      background: var(--bg-body);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--accent);
+      border-right: 1px solid var(--card-border);
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 0 1rem;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    .brand {
+      padding: 0 1.5rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+
+    .brand-name {
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .brand-name .nova {
+      color: #fff;
+    }
+
+    .brand-name .sphere {
+      color: var(--accent);
+    }
+
+    .brand-role {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    .nav-section-label {
+      padding: 0.75rem 1.5rem 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(167, 139, 250, 0.5);
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 1.5rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-radius: 0;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+    }
+
+    .nav-link i {
+      font-size: 1.05rem;
+      width: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: #fff;
+      background: rgba(108, 63, 245, 0.18);
+    }
+
+    .nav-link.active {
+      border-left: 3px solid var(--purple);
+      padding-left: calc(1.5rem - 3px);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 1.5rem 0;
+      border-top: 1px solid var(--card-border);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-btn {
+      border-radius: 12px;
+      font-weight: 600;
+      padding: 0.85rem;
+      transition: all 0.3s ease;
+      margin: 0 1rem 1rem 1rem;
+    }
+
+
+    /* ── Main content ── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      background: rgba(15, 13, 30, 0.85);
+      backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      font-weight: 800;
+      color: var(--indigo);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .topbar-title i {
+      color: var(--accent);
+    }
+
+    .topbar-title i {
+      color: var(--indigo);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    .user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .page-content {
+      padding: 2rem;
+      flex: 1;
+    }
+
+    /* ── Tab panes ── */
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* ── Flash alerts ── */
+    .flash-wrap {
+      margin-bottom: 1.5rem;
+    }
+
+    .flash-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .flash-success {
+      background: rgba(16, 185, 129, 0.12);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .flash-danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .flash-warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .flash-info {
+      background: rgba(59, 130, 246, 0.12);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    /* ── Welcome hero ── */
+    .welcome-hero {
+      background: linear-gradient(135deg, rgba(108, 63, 245, 0.25), rgba(99, 102, 241, 0.15));
+      border: 1px solid rgba(108, 63, 245, 0.3);
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--purple) 100%);
+      border: none;
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      color: white;
+    }
+
+    .welcome-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(108, 63, 245, 0.15);
+      pointer-events: none;
+    }
+
+    .welcome-hero h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .welcome-hero p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .welcome-hero h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .welcome-hero p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    .company-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(167, 139, 250, 0.2);
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      color: var(--accent);
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      border-radius: 999px;
+      padding: 0.25rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      transform: translate(30%, -30%);
+      opacity: 0.15;
+      opacity: 0.05;
+    }
+
+    .kpi-card.purple::before {
+      background: var(--purple);
+    }
+
+    .kpi-card.green::before {
+      background: var(--success);
+    }
+
+    .kpi-card.amber::before {
+      background: var(--warning);
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .kpi-icon.purple {
+      background: rgba(108, 63, 245, 0.2);
+      color: var(--accent);
+    }
+
+    .kpi-icon.green {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+
+    .kpi-icon.amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+
+    .kpi-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .kpi-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--indigo);
+      line-height: 1;
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Data cards ── */
+    .data-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .data-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      background: #fafafa;
+    }
+
+    .data-card-header h5 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .data-card-header h5 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--indigo);
+      margin-bottom: 0;
+    }
+
+    .data-card-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    /* ── Tables ── */
+    .table {
+      color: var(--text);
+      font-size: 0.875rem;
+    }
+
+    .table thead th {
+      background: rgba(108, 63, 245, 0.1);
+      color: var(--accent);
+      background: #f1f5f9;
+      color: var(--indigo);
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      padding: 0.75rem 1rem;
+      white-space: nowrap;
+    }
+
+    .table tbody td {
+      border-color: var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 1rem;
+      vertical-align: middle;
+    }
+
+    .table tbody tr {
+      transition: background 0.15s;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(108, 63, 245, 0.07);
+    }
+
+    .table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    /* ── Badges ── */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .badge-open {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .badge-closed {
+      background: rgba(100, 116, 139, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(100, 116, 139, 0.25);
+    }
+
+    .badge-pending {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .badge-shortlisted {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .badge-selected {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .badge-rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .badge-interviewed {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c4b5fd;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    /* ── Buttons ── */
+    .btn-purple {
+      background: linear-gradient(135deg, var(--purple), var(--indigo));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem 1.2rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(108, 63, 245, 0.35);
+    }
+
+    .btn-purple:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(108, 63, 245, 0.5);
+      color: #fff;
+    }
+
+    .btn-sm-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.05);
+      background: #fff;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-sm-icon:hover {
+      background: rgba(108, 63, 245, 0.2);
+      color: var(--accent);
+      border-color: var(--purple);
+    }
+
+    .btn-sm-icon:hover {
+      background: var(--indigo);
+      color: white;
+      border-color: var(--indigo);
+    }
+
+    /* ── Post Job Modal ── */
+    .modal-content {
+      background: #1a1733;
+      border: 1px solid var(--card-border);
+      background: #fff;
+      border: none;
+      border-radius: 20px;
+      color: var(--text);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, rgba(108, 63, 245, 0.25), rgba(99, 102, 241, 0.15));
+      background: #f8fafc;
+      border-bottom: 1px solid var(--card-border);
+      border-radius: 20px 20px 0 0;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .btn-close-custom {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: var(--muted);
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .btn-close-custom:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+    }
+
+    .modal .form-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .modal .form-control,
+    .modal .form-select {
+      background: rgba(255, 255, 255, 0.06) !important;
+      border: 1.5px solid var(--card-border) !important;
+      background: #fff !important;
+      border: 2px solid #e2e8f0 !important;
+      border-radius: 10px !important;
+      color: var(--text) !important;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+
+    .modal .form-control::placeholder {
+      color: rgba(232, 230, 245, 0.3);
+    }
+
+    .modal .form-control::placeholder {
+      color: #cbd5e1;
+    }
+
+    .modal .form-control:focus,
+    .modal .form-select:focus {
+      border-color: var(--purple) !important;
+      background: rgba(108, 63, 245, 0.1) !important;
+      box-shadow: none !important;
+      border-color: var(--indigo) !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 4px rgba(81, 45, 168, 0.1) !important;
+    }
+
+    .modal .form-select option {
+      background: #1a1733;
+    }
+
+    /* ── Status select inside table ── */
+    .status-select {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      min-width: 130px;
+    }
+
+    .status-select option {
+      background: #1a1733;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      opacity: 0.3;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      opacity: 0.2;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+    }
+
+    /* ── Responsive ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 99;
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--indigo);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.show {
+        display: block;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .mobile-toggle {
+        display: block;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-content {
+        padding: 1.25rem;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-name"><span class="nova">NOVA</span><span class="sphere">SPHERE</span></div>
+      <div class="brand-role">Recruiter Portal</div>
+    </div>
+
+    <span class="nav-section-label">Navigation</span>
+    <button class="nav-link active" id="tab-overview-btn" onclick="showTab('overview')">
+      <i class="bi bi-grid-1x2-fill"></i> Dashboard
+    </button>
+    <button class="nav-link" id="tab-jobs-btn" onclick="showTab('jobs')">
+      <i class="bi bi-briefcase-fill"></i> My Drives
+    </button>
+    <button class="nav-link" id="tab-applicants-btn" onclick="showTab('applicants')">
+      <i class="bi bi-people-fill"></i> Applicants
+    </button>
+
+    <span class="nav-section-label" style="margin-top:auto">Account</span>
+    <div class="sidebar-footer">
+      <a href="/logout" class="logout-btn"><i class="bi bi-door-open"></i> Logout</a>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="mobile-toggle" id="mobileToggle"><i class="bi bi-list"></i></button>
+        <div class="topbar-title">
+          <i class="bi bi-building-check"></i> Recruiter Control Center
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-pill">
+          <img src="{{ user.email | gravatar }}" alt="avatar" class="user-avatar">
+          <span class="user-name">{{ user.full_name.split(' ')[0] }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- Flash messages -->
+      <div class="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-item flash-{{ category }}">
+          <i
+            class="bi bi-{% if category == 'success' %}check-circle-fill{% elif category == 'danger' %}exclamation-triangle-fill{% elif category == 'warning' %}exclamation-diamond-fill{% else %}info-circle-fill{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- ═══════════════════════════════════════
+         TAB 1: OVERVIEW
+    ═══════════════════════════════════════ -->
+      <div class="tab-pane active" id="tab-overview">
+
+        <!-- Welcome Hero -->
+        <div class="welcome-hero mb-4">
+          <div class="company-badge"><i class="bi bi-building"></i> {{ profile.company_name }}</div>
+          <h2>Welcome back, {{ user.full_name.split(' ')[0] }}!</h2>
+          <p>Manage your campus drives and track candidates from this central hub.</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card purple">
+            <div class="kpi-icon purple"><i class="bi bi-briefcase-fill"></i></div>
+            <div class="kpi-value">{{ active_jobs }}</div>
+            <div class="kpi-label">Active Drives</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon green"><i class="bi bi-people-fill"></i></div>
+            <div class="kpi-value">{{ total_applicants }}</div>
+            <div class="kpi-label">Total Candidates</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-icon amber"><i class="bi bi-star-fill"></i></div>
+            <div class="kpi-value">{{ shortlisted }}</div>
+            <div class="kpi-label">Shortlisted / Selected</div>
+          </div>
+        </div>
+
+        <!-- Recent Drives Table -->
+        <div class="data-card">
+          <div class="data-card-header">
+            <h5><i class="bi bi-clock-history me-2 text-accent" style="color:var(--accent)"></i>Recent Drives</h5>
+            <button class="btn-purple" data-bs-toggle="modal" data-bs-target="#postJobModal">
+              <i class="bi bi-plus-lg"></i> Post New Drive
+            </button>
+          </div>
+          <div class="data-card-body p-0">
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th class="ps-3">Company / Role</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                    <th class="text-center">Applicants</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for job in jobs[:5] %}
+                  <tr>
+                    <td class="ps-3">
+                      <div class="fw-bold text-white" style="font-size:0.9rem">{{ job.company_name }}</div>
+                      <div class="fw-bold text-dark" style="font-size:0.9rem">{{ job.company_name }}</div>
+                      <div style="font-size:0.78rem; color:var(--muted)">{{ job.job_role }}</div>
+                    </td>
+                    <td style="font-size:0.82rem">{{ job.deadline.strftime('%d %b %Y') }}</td>
+                    <td>
+                      {% if job.deadline < now or job.status=='closed' %} <span class="badge-status badge-closed"><i
+                          class="bi bi-clock-history"></i> Closed</span>
+                        {% else %}
+                        <span class="badge-status badge-open"><i class="bi bi-circle-fill" style="font-size:0.5rem"></i>
+                          Live</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <span class="fw-bold" style="color:var(--accent)">{{ job.applications|length }}</span>
+                      <span class="fw-bold" style="color:var(--indigo)">{{ job.applications|length }}</span>
+                    </td>
+                    <td>
+                      <button class="btn-sm-icon" onclick="showTab('applicants')" title="View Applicants">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-state"><i class="bi bi-briefcase"></i>
+                        <p>No drives posted yet. Click "Post New Drive" to get started.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════
+         TAB 2: MY DRIVES
+    ═══════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-jobs">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h3 class="fw-bold text-white mb-1">My Drives</h3>
+            <h3 class="fw-bold text-dark mb-1">My Drives</h3>
+            <p style="color:var(--muted); font-size:0.88rem">All job drives posted by your company</p>
+          </div>
+          <button class="btn-purple" data-bs-toggle="modal" data-bs-target="#postJobModal">
+            <i class="bi bi-plus-lg"></i> Post New Drive
+          </button>
+        </div>
+
+        <div class="data-card">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-3">Role</th>
+                  <th>Package</th>
+                  <th>Location</th>
+                  <th>Min CGPA</th>
+                  <th>Deadline</th>
+                  <th>Status</th>
+                  <th class="text-center">Applied</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for job in jobs %}
+                <tr>
+                  <td class="ps-3">
+                    <div class="fw-bold text-white" style="font-size:0.88rem">{{ job.job_role }}</div>
+                    <div class="fw-bold text-dark" style="font-size:0.88rem">{{ job.job_role }}</div>
+                    <div style="font-size:0.75rem; color:var(--muted)">{{ job.company_name }}</div>
+                  </td>
+                  <td style="font-size:0.82rem; color:var(--accent)">{{ job.salary_package or '—' }}</td>
+                  <td style="font-size:0.82rem; color:var(--indigo); font-weight:700">{{ job.salary_package or '—' }}
+                  </td>
+                  <td style="font-size:0.82rem">{{ job.location or '—' }}</td>
+                  <td style="font-size:0.82rem">{{ job.min_cgpa }}</td>
+                  <td style="font-size:0.82rem">{{ job.deadline.strftime('%d %b %Y') }}</td>
+                  <td>
+                    {% if job.deadline < now or job.status=='closed' %} <span class="badge-status badge-closed">
+                      Closed</span>
+                      {% else %}
+                      <span class="badge-status badge-open">Live</span>
+                      {% endif %}
+                  </td>
+                  <td class="text-center fw-bold" style="color:var(--accent)">{{ job.applications|length }}</td>
+                  <td class="text-center fw-bold" style="color:var(--indigo)">{{ job.applications|length }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="bi bi-briefcase-fill"></i>
+                      <p>No drives posted yet.</p>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════
+         TAB 3: APPLICANTS
+    ═══════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-applicants">
+        <div class="mb-4">
+          <h3 class="fw-bold text-white mb-1">Applicant Management</h3>
+          <h3 class="fw-bold text-dark mb-1">Applicant Management</h3>
+          <p style="color:var(--muted); font-size:0.88rem">Review and update candidate statuses across all your drives
+          </p>
+        </div>
+
+        <div class="data-card">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-3">Candidate</th>
+                  <th>Reg. No.</th>
+                  <th>Department</th>
+                  <th>CGPA</th>
+                  <th>Applied For</th>
+                  <th>Current Status</th>
+                  <th>Update Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in all_applications %}
+                {% set app = item.app %}
+                {% set student = item.student %}
+                {% set job = item.job %}
+                <tr>
+                  <td class="ps-3">
+                    <div class="fw-bold" style="font-size:0.88rem">{{ student.name }}</div>
+                    <div style="font-size:0.75rem; color:var(--muted)">{{ student.email }}</div>
+                  </td>
+                  <td style="font-size:0.82rem; font-family:monospace; color:var(--accent)">{{ student.regno }}</td>
+                  <td style="font-size:0.82rem; font-family:monospace; color:var(--indigo); font-weight:600">{{
+                    student.regno }}</td>
+                  <td style="font-size:0.82rem">{{ student.department }} / Sem {{ student.sem }}</td>
+                  <td style="font-size:0.82rem">
+                    <span
+                      class="fw-bold {% if student.cgpa >= 8.0 %}text-success{% elif student.cgpa >= 6.5 %}text-warning{% else %}text-danger{% endif %}"
+                      style="color:inherit">
+                      {{ student.cgpa }}
+                    </span>
+                  </td>
+                  <td style="font-size:0.82rem">
+                    <div class="fw-semibold">{{ job.job_role }}</div>
+                    <div style="color:var(--muted); font-size:0.75rem">{{ job.company_name }}</div>
+                  </td>
+                  <td>
+                    <span class="badge-status badge-{{ app.status }}">
+                      {% if app.status == 'selected' %}<i class="bi bi-trophy-fill"></i>
+                      {% elif app.status == 'shortlisted' %}<i class="bi bi-bookmark-star"></i>
+                      {% elif app.status == 'rejected' %}<i class="bi bi-x-circle"></i>
+                      {% elif app.status == 'interviewed' %}<i class="bi bi-camera-video"></i>
+                      {% else %}<i class="bi bi-hourglass-split"></i>{% endif %}
+                      {{ app.status | capitalize }}
+                    </span>
+                  </td>
+                  <td>
+                    <form action="/recruiter/update_applicant_status/{{ app.id }}" method="POST"
+                      class="d-flex align-items-center gap-2">
+                      <select name="status" class="status-select">
+                        <select name="status" class="status-select text-dark fw-bold border-2">
+                          <option value="pending" {% if app.status=='pending' %}selected{% endif %}>Pending</option>
+                          <option value="shortlisted" {% if app.status=='shortlisted' %}selected{% endif %}>Shortlisted
+                          </option>
+                          <option value="interviewed" {% if app.status=='interviewed' %}selected{% endif %}>Interviewed
+                          </option>
+                          <option value="selected" {% if app.status=='selected' %}selected{% endif %}>Selected</option>
+                          <option value="rejected" {% if app.status=='rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                        <button type="submit" class="btn-sm-icon" title="Save">
+                          <i class="bi bi-check2"></i>
+                        </button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="bi bi-inbox"></i>
+                      <p>No applicants yet. Post a drive to start receiving candidates.</p>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+
+
+  <!-- ══════════════════════════
+     POST JOB MODAL
+══════════════════════════ -->
+  <div class="modal fade" id="postJobModal" tabindex="-1" aria-labelledby="postJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="postJobModalLabel">
+            <i class="bi bi-megaphone-fill me-2" style="color:var(--accent)"></i>Post New Campus Drive
+            <i class="bi bi-megaphone-fill me-2" style="color:var(--indigo)"></i>Post New Campus Drive
+          </h5>
+          <button type="button" class="btn-close-custom" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <form action="/recruiter/post_job" method="POST">
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                <input type="text" name="company_name" class="form-control" value="{{ profile.company_name }}" required
+                  placeholder="e.g. TechCorp India">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Job / Role Title <span class="text-danger">*</span></label>
+                <input type="text" name="job_role" class="form-control" required placeholder="e.g. Software Engineer">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Job Description <span class="text-danger">*</span></label>
+                <textarea name="job_description" class="form-control" rows="4" required
+                  placeholder="Describe responsibilities, required skills, and tech stack..."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Eligibility Criteria</label>
+                <textarea name="eligibility_criteria" class="form-control" rows="2"
+                  placeholder="e.g. 7.0+ CGPA, No active backlogs, BCA/BBA only..."></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Salary Package</label>
+                <input type="text" name="salary_package" class="form-control" placeholder="e.g. 6 LPA">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location <span class="text-danger">*</span></label>
+                <input type="text" name="location" class="form-control" required placeholder="e.g. Bengaluru">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Min CGPA</label>
+                <input type="number" name="min_cgpa" class="form-control" step="0.1" min="0" max="10" value="0"
+                  placeholder="e.g. 7.0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Max Backlogs Allowed</label>
+                <input type="number" name="max_backlogs" class="form-control" min="0" value="0" placeholder="e.g. 0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Application Deadline <span class="text-danger">*</span></label>
+                <input type="datetime-local" name="deadline" class="form-control" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Application Form Link <span class="badge"
+                    style="background:rgba(167,139,250,0.15);color:var(--accent);font-size:0.65rem">Optional</span></label>
+                style="background:rgba(81, 45, 168, 0.1);color:var(--indigo);font-size:0.65rem">Optional</span></label>
+                <input type="url" name="form_link" class="form-control" placeholder="https://forms.google.com/...">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold"
+              data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-purple px-5">
+              <i class="bi bi-send-fill me-1"></i>Publish Drive
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    /* ── Tab switching ── */
+    function showTab(name) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('tab-' + name + '-btn').classList.add('active');
+    }
+
+    /* ── Mobile sidebar ── */
+    const toggle = document.getElementById('mobileToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  </script>
+
+  {% include 'chatbot.html' %}
+</body>
+
+</html>
