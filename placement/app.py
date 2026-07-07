@@ -83,6 +83,13 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 mail.init_app(app)
 db.init_app(app)
 
+# Run migrations automatically on startup (crucial for Render/production deployment)
+try:
+    from db_migrations import run_migrations
+    run_migrations()
+except Exception as e:
+    print(f"Startup migration failed: {e}")
+
 # GROQ Client Initialization
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 model = "gemini-1.5-flash"
